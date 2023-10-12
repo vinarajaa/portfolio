@@ -1,0 +1,25 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: local
+    hooks:
+    -   id: update-readme-version.py
+        name: update-readme-version.py
+        entry: python hooks/update-readme-version.py
+        language: python
+        pass_filenames: false
+    -   id: update-docstring-coverage.py
+        name: update-docstring-coverage.py
+        entry: python hooks/update-docstring-coverage.py
+        language: python
+        pass_filenames: false
+    -   id: update-coverage.py
+        name: update-coverage.py
+        entry: python hooks/update-coverage.py
+        language: python
+        pass_filenames: false
+    # -   id: docstr-chatgpt-update.py
+    #     name: docstr-chatgpt-update.py
+    #     entry: python hooks/docstr-chatgpt-update.py
+    #     language: python
+    #     pass_filenames: false
