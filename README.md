@@ -1,2 +1,4 @@
 # portfolio
-Portfolio Repository 
+Portfolio 
+Including various different programming projects
+
