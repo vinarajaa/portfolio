@@ -1,0 +1,109 @@
+
+name: CI/CD  # Name of the GitHub Actions workflow
+
+on:  # Triggers for the workflow
+  push:  # Triggered on code push events
+    branches-ignore:  # Ignore these specific branches
+      - dev
+      - main
+
+  pull_request:  # Triggered on pull request events
+    branches: dev  # Only on the 'dev' branch
+    types:  # Specific pull request actions
+      - opened
+      - synchronize
+      - closed
+
+jobs:
+  Unit_Tests_and_CI:
+    runs-on: ubuntu-latest  # Specifies the runner environment (Ubuntu)
+    # if: ${{ (github.event_name == 'pull_request' && github.event.action != 'closed') || (github.event_name == 'push' && !contains('dev', github.ref) && !contains('prod', github.ref)) }}
+    if: ${{ (github.event_name == 'push' && !contains('dev', github.ref) && !contains('prod', github.ref)) }}
+    
+    
+    # Conditional to decide when this job should run based on event type and branch name
+    steps:
+      - name: Checking out branch
+        uses: actions/checkout@v3
+
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Setup venv
+        run: |
+          pip install virtualenv
+          virtualenv venv
+          source venv/bin/activate
+          export VIRTUAL_ENV=$PWD/venv
+          echo $VIRTUAL_ENV
+
+      - name: Installing Dependencies
+        run: |
+          source venv/bin/activate
+          pip install -r requirements.txt
+          pip install pytest
+          pip install pytest-env
+
+      # - name: Test with pytest
+      #   run: |
+      #     source venv/bin/activate
+      #     pytest --ignore test_endpoints.py
+
+      # # adding TODO tags to roadmap on readme
+      # - name: Adding TODO tags to Readme.md
+      #   run: |
+      #     source venv/bin/activate
+      #     echo "Finding TODO tags..."
+      #     python add_todos_to_readme.py
+
+      - name: Print Success Message
+        run: echo "Successfully ran CI steps."
+
+  deploy:
+    runs-on: ubuntu-latest  # Specifies the runner environment (Ubuntu)
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true }}
+    # Conditional to decide when this job should run based on event type, action, and merged status
+
+    steps:  # List of steps to execute in the job
+      - name: Checking out branch
+        uses: actions/checkout@v3  # Check out the repository source code
+
+      - name: Set up python
+        uses: actions/setup-python@v4  # Set up Python environment
+        with:
+          python-version: "3.9"  # Use Python 3.9
+
+      - name: Setup venv
+        run: |
+          pip install virtualenv  # Install virtualenv package
+          virtualenv venv  # Create a virtual environment
+          source venv/bin/activate  # Activate the virtual environment
+          export VIRTUAL_ENV=$PWD/venv  # Export virtual environment path
+          echo $VIRTUAL_ENV  # Print virtual environment path
+
+      - name: Installing Dependencies
+        run: |
+          source venv/bin/activate  # Activate the virtual environment
+          pip install -r requirements.txt  # Install project dependencies
+          pip install zappa  # Install Zappa for serverless deployment
+          pip install pytest  # Install pytest for testing
+          pip install pytest-env  # Install pytest-env package
+
+      # - name: Configuring AWS Credentials
+      #   run: |
+      #     source venv/bin/activate  # Activate the virtual environment
+      #     aws configure set region us-east-1 --profile default  # Set AWS region
+      #     aws configure set output json --profile default  # Set AWS CLI output format
+      #     aws configure set aws_access_key_id ${{  secrets.AWS_ACCESS_KEY }} --profile default  # Set AWS access key
+      #     aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_KEY }} --profile default  # Set AWS secret key
+
+      # - name: Zappa Deployments
+      #   run: |
+      #     source venv/bin/activate  # Activate the virtual environment
+      #     echo "ENV=dev" >> .env  # Set environment variable in .env file
+      #     zappa update dev  # Deploy using Zappa to the dev environment
+
+      - name: Print Success Message
+        run: echo "Successfully merged." 
